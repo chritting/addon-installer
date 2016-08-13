@@ -23,6 +23,31 @@ class Installer:
         if self.noop:
             log.info('NOOP mode')
 
+    async def _search_addon(self, addon):
+        url = 'https://mods.curse.com/search?game-slug=wow&search={}'.format(addon)
+        log.info(url)
+        async with self.session.get(url) as response:
+            m = re.search(
+                r'<a href="/addons/wow/.*">(?P<description>.*)</a>',
+                await response.text()
+            )
+            print('/addons/' in await response.text())
+            # print(await response.text())
+        if not m:
+            log.error("No addon found with name: '%s'", addon)
+            return
+
+        log.info(m.groups)
+
+    async def search(self, names):
+        tasks = []
+        with ClientSession() as self.session:
+            for name in names:
+                tasks.append(asyncio.ensure_future(
+                    self._search_addon(name)
+                ))
+            await asyncio.wait(tasks)
+
     async def _install_addon(self, addon):
         url = 'https://mods.curse.com/addons/wow/{}/download'.format(addon)
         async with self.session.get(url) as response:
@@ -64,6 +89,7 @@ if __name__ == '__main__':
         format='%(asctime)-15s %(levelname)-8s %(message)s'
     )
     parser = ArgumentParser()
+    parser.add_argument('search', nargs='*', help='Search for addon names')
     parser.add_argument('-n', '--noop', action='store_true', help='Do not install')
     parser.add_argument('-c', '--conf', default='conf.json', help='Configuration file')
     args = parser.parse_args()
@@ -71,6 +97,9 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     installer = Installer(conf=args.conf, noop=args.noop)
 
-    loop.run_until_complete(installer.install())
+    if args.search:
+        loop.run_until_complete(installer.search(args.search[1:]))
+    else:
+        loop.run_until_complete(installer.install())
 
     loop.close()
