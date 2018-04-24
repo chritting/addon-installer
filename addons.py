@@ -8,7 +8,7 @@ from io import BytesIO
 from pathlib import Path
 
 from aiohttp import ClientSession
-from halo import Halo
+# from halo import Halo
 
 
 class Installer:
@@ -26,7 +26,7 @@ class Installer:
         self.session = None
 
         # Runtime
-        self.loader = Halo(f'Installing addons... (0/{len(self.addons)})')
+        # self.loader = Halo(f'Installing addons... (0/{len(self.addons)})')
         self._done = []
         self._failed = []
 
@@ -35,8 +35,8 @@ class Installer:
             self._failed.append((addon, error))
         else:
             self._done.append(addon)
-        errors = f', {len(self._failed)} errors' if self._failed else ''
-        self.loader.text = f'Installing addons... ({len(self._done) + len(self._failed)}/{len(self.addons)}{errors})'
+        # errors = f', {len(self._failed)} errors' if self._failed else ''
+        # self.loader.text = f'Installing addons... ({len(self._done) + len(self._failed)}/{len(self.addons)}{errors})'
 
     async def _alt_install_addon(self, addon):
         """
@@ -84,12 +84,12 @@ class Installer:
         self.done(addon)
 
     async def install(self):
-        self.loader.start()
+        # self.loader.start()
         async with ClientSession() as self.session:
             await asyncio.gather(*[
                 self._install_addon(addon) for addon in self.addons
             ])
-        self.loader.stop()
+        # self.loader.stop()
 
         for addon, error in self._failed:
             print(f"Failed to install: '{addon}' ({error})")

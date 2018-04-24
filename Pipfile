@@ -9,6 +9,7 @@ halo = "*"
 enum34 = {version="*", markers="python_version < '3.4'"}
 
 [dev-packages]
+pyinstaller = "*"
 
 [requires]
 python_version = "3.6"
